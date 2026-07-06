@@ -1,48 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 function AddProduct() {
   const navigate = useNavigate();
 
-  // ✅ Get user from storage
   const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role;
+
+  console.log("Logged in user:", user);
+
+  const profileId = user?.id;
   const username = user?.username;
+  const role = user?.role;
 
   const [productData, setProductData] = useState({
     name: "",
     category: "",
     price: "",
+    quantity: "",
     description: "",
     image: "",
-    farmer_name: "",
   });
 
-  // ✅ AUTO SET FARMER NAME
-  useEffect(() => {
-    if (username) {
-      setProductData((prev) => ({
-        ...prev,
-        farmer_name: username,
-      }));
-    }
-  }, [username]);
-
-  // ❌ BLOCK NON-FARMERS
-  useEffect(() => {
-    if (role && role !== "farmer") {
-      toast.error("Only farmers can add products");
-      navigate("/products");
-    }
-
-    if (!role) {
-      toast.error("Please login first");
-      navigate("/login");
-    }
-  }, [role, navigate]);
+  if (!user || role !== "farmer") {
+    navigate("/login");
+    return null;
+  }
 
   const handleChange = (e) => {
     setProductData({
@@ -56,36 +40,27 @@ function AddProduct() {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/add-product/",
-        productData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        `http://127.0.0.1:8000/api/farmer/${profileId}/add-product/`,
+        productData
       );
 
-      toast.success(
-        response.data.message || "Product Added Successfully"
-      );
+      toast.success(response.data.message || "Product Added Successfully");
 
-      // reset form (keep farmer name)
       setProductData({
         name: "",
         category: "",
         price: "",
+        quantity: "",
         description: "",
         image: "",
-        farmer_name: username,
       });
-
     } catch (error) {
       console.log(error);
 
-      if (error.response?.data) {
-        toast.error(JSON.stringify(error.response.data));
+      if (error.response) {
+        toast.error(error.response.data.message || "Failed to add product");
       } else {
-        toast.error("Failed To Add Product");
+        toast.error("Server Error");
       }
     }
   };
@@ -98,16 +73,13 @@ function AddProduct() {
           "url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1600&auto=format&fit=crop')",
       }}
     >
-     
-
-      <div className="flex justify-center items-center min-h-screen bg-black/50">
-
+      <div className="min-h-screen flex justify-center items-center bg-black/60 p-6">
         <form
           onSubmit={handleSubmit}
-          className="bg-white/20 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-[500px] border border-white/30"
+          className="bg-white/20 backdrop-blur-lg border border-white/30 shadow-2xl rounded-3xl p-10 w-full max-w-lg"
         >
           <h1 className="text-4xl font-bold text-white text-center mb-8">
-            Add Farm Product
+            🌾 Add Farm Product
           </h1>
 
           <input
@@ -116,7 +88,7 @@ function AddProduct() {
             placeholder="Product Name"
             value={productData.name}
             onChange={handleChange}
-            className="w-full p-3 mb-4 rounded outline-none"
+            className="w-full p-3 mb-4 rounded-lg outline-none"
             required
           />
 
@@ -124,14 +96,14 @@ function AddProduct() {
             name="category"
             value={productData.category}
             onChange={handleChange}
-            className="w-full p-3 mb-4 rounded outline-none"
+            className="w-full p-3 mb-4 rounded-lg outline-none"
             required
           >
             <option value="">Select Category</option>
-            <option value="fruit">Fruit</option>
-            <option value="vegetable">Vegetable</option>
-            <option value="grain">Grain</option>
-            <option value="dairy">Dairy</option>
+            <option value="Fruit">Fruit</option>
+            <option value="Vegetable">Vegetable</option>
+            <option value="Grain">Grain</option>
+            <option value="Dairy">Dairy</option>
           </select>
 
           <input
@@ -140,7 +112,17 @@ function AddProduct() {
             placeholder="Price"
             value={productData.price}
             onChange={handleChange}
-            className="w-full p-3 mb-4 rounded outline-none"
+            className="w-full p-3 mb-4 rounded-lg outline-none"
+            required
+          />
+
+          <input
+            type="number"
+            name="quantity"
+            placeholder="Quantity"
+            value={productData.quantity}
+            onChange={handleChange}
+            className="w-full p-3 mb-4 rounded-lg outline-none"
             required
           />
 
@@ -149,30 +131,35 @@ function AddProduct() {
             placeholder="Description"
             value={productData.description}
             onChange={handleChange}
-            className="w-full p-3 mb-4 rounded outline-none"
+            rows="4"
+            className="w-full p-3 mb-4 rounded-lg outline-none"
             required
           />
 
           <input
-            type="url"
+            type="text"
             name="image"
             placeholder="Image URL"
             value={productData.image}
             onChange={handleChange}
-            className="w-full p-3 mb-4 rounded outline-none"
+            className="w-full p-3 mb-4 rounded-lg outline-none"
             required
           />
 
-          {/* ❌ removed manual farmer input */}
+          <input
+            type="text"
+            value={username}
+            disabled
+            className="w-full p-3 mb-6 rounded-lg bg-gray-200"
+          />
 
           <button
             type="submit"
-            className="bg-green-700 hover:bg-green-800 text-white w-full p-3 rounded text-lg transition duration-300"
+            className="w-full bg-green-700 hover:bg-green-800 text-white text-lg font-semibold py-3 rounded-xl"
           >
             Add Product
           </button>
         </form>
-
       </div>
     </div>
   );

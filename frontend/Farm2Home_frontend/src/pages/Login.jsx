@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -25,36 +24,60 @@ function Login() {
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/login/",
-        loginData
+        {
+          username: loginData.username.trim(),
+          password: loginData.password.trim(),
+        }
       );
 
-      if (response.data.message === "Login Successful") {
-        
-        // ✅ STORE USER PROPERLY (IMPORTANT FIX)
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            username: response.data.username,
-            role: response.data.role,
-          })
-        );
+      console.log("Login response:", response.data);
+
+      const data = response.data;
+
+      // ✅ LOGIN SUCCESS CHECK
+      if (data.message === "Login Successful") {
+
+        // 🔥 IMPORTANT FIX: ensure correct ID mapping
+        const userObj = {
+          user_id: data.user_id,        // Django auth user id
+          id: data.profile_id,          // ⭐ FARMER PROFILE ID (IMPORTANT FIX)
+
+          username: data.username,
+          email: data.email,
+          role: data.role,
+
+          phone: data.phone || "",
+          village: data.village || "",
+          city: data.city || "",
+          state: data.state || "",
+          pincode: data.pincode || "",
+          address: data.address || "",
+          experience: data.experience || "",
+          photo: data.photo || "",
+          bio: data.bio || "",
+        };
+
+        // ✅ STORE USER
+        localStorage.setItem("user", JSON.stringify(userObj));
 
         toast.success("Login Successful");
 
-        // Redirect based on role (optional but better UX)
-        if (response.data.role === "farmer") {
+        // ✅ ROUTING FIX
+        if (data.role === "farmer") {
           navigate("/farmer-dashboard");
         } else {
           navigate("/products");
         }
 
       } else {
-        toast.error(response.data.message);
+        toast.error(data.message || "Login Failed");
       }
 
     } catch (error) {
-      console.log(error);
-      toast.error("Login Failed");
+      console.log(error.response?.data || error.message);
+      toast.error(
+        error.response?.data?.message || "Login Failed"
+      );
     }
   };
 
@@ -63,16 +86,16 @@ function Login() {
       className="min-h-screen bg-cover bg-center"
       style={{
         backgroundImage:
-          "url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1600&auto=format&fit=crop')",
+          "url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1600&auto=format&fit=crop')",
       }}
     >
-     
-
       <div className="flex justify-center items-center h-[90vh]">
+
         <form
           onSubmit={handleSubmit}
           className="bg-white/20 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-96 border border-white/30"
         >
+
           <h1 className="text-4xl text-white font-bold text-center mb-6">
             Login
           </h1>
@@ -111,7 +134,9 @@ function Login() {
               Register
             </span>
           </p>
+
         </form>
+
       </div>
     </div>
   );

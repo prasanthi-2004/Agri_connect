@@ -13,28 +13,53 @@ import Checkout from "./pages/Checkout";
 import FarmerDashboard from "./pages/FarmerDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Payment from "./pages/Payment";
+import Profile from "./pages/Profile";
+import EditProduct from "./pages/EditProduct";
+import Orders from "./pages/Orders";
+import Farmers from "./pages/Farmers";
+import FarmerProfile from "./pages/FarmerProfile";
+import FarmerProducts from "./pages/FarmerProducts";
+
 function App() {
   return (
     <BrowserRouter>
-
-      {/* SINGLE NAVBAR ONLY */}
       <Navbar />
 
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
         <Route path="/products" element={<Products />} />
         <Route path="/add-product" element={<AddProduct />} />
+        <Route path="/edit-product/:id" element={<EditProduct />} />
+
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/payment" element={<Payment />} />
+
+        <Route path="/profile" element={<Profile />} />
+
         <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+
+        {/* Customer */}
+        <Route path="/farmers" element={<Farmers />} />
+
+        {/* Farmer Details */}
+        <Route path="/farmer/:id" element={<FarmerProfile />} />
+
+        {/* Farmer Products */}
+        <Route
+          path="/farmer/:id/products"
+          element={<FarmerProducts />}
+        />
+
+        <Route path="*" element={<Home />} />
       </Routes>
 
-      <ToastContainer />
-
+      <ToastContainer position="top-right" autoClose={3000} />
     </BrowserRouter>
   );
 }

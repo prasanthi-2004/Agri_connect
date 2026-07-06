@@ -28,6 +28,8 @@ class Product(models.Model):
 
     farmer_name = models.CharField(max_length=100)
 
+    discount = models.FloatField(default=0)
+
     def __str__(self):
 
         return self.name

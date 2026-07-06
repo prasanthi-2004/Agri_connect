@@ -21,6 +21,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
-    path('api/', include('productapp.urls')),
+    path('api/', include('products.urls')),   # move this ABOVE productapp
     path('api/', include('orders.urls')),
 ]
